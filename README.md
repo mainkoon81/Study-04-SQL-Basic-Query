@@ -52,31 +52,32 @@ WHERE name LIKE '%one%';
  - > imagine yourself as a sales manager. You want to see how several rows (jumbled) are performing. You need to filter data based on several, multiple IDs. For example, just want to see Walmart, Apple, Samsung, etc. at the same time.
  - > Ex) Use the accounts table to find the account name, primary_poc, and sales_rep_id for Walmart, Target, and Nordstrom. 
 ```
->SELECT name, primary_poc, sales_rep_id
->FROM accounts
->WHERE name IN ('Walmart', 'Target', 'Nordstrom');
+SELECT name, primary_poc, sales_rep_id
+FROM accounts
+WHERE name IN ('Walmart', 'Target', 'Nordstrom');
 ```
 ### WHERE + (column + NOT  + LIKE (%) or IN(‘—‘, ‘—‘) ):   
-it’s an inverse..
-_imagine yourself as a sales manager. You are considering promoting 2 of top sales reps (sales representative) into management (so their accounts would be taken over by others). You need to figure out how to divvy up all of their accounts among the other sales reps. In deciding who to assign these accounts to, you need to consider which accounts the other sales reps are currently working. So you need to look at all the accounts that are not listed in the query that shows the 2 new managers’ previous accounts. 
+ - it’s an inverse..
+ - > imagine yourself as a sales manager. You are considering promoting 2 of top sales reps (sales representative) into management (so their accounts would be taken over by others). You need to figure out how to divvy up all of their accounts among the other sales reps. In deciding who to assign these accounts to, you need to consider which accounts the other sales reps are currently working. So you need to look at all the accounts that are not listed in the query that shows the 2 new managers’ previous accounts. 
+ - > Ex) Use the accounts table, find all the companies whose names do not start with 'C' but end with 's'.
+ - > Ex) Use the web_events table, to find all information regarding individuals who were contacted via organic or adwords and started their account at any point in 2016 sorted from newest to oldest.
+ - > Ex) Use the accounts table, find all the company names that start with a 'C' or 'W', and the primary contact contains 'ana' or 'Ana', but it doesn't contain 'eana'.
+``` 
+SELECT name
+FROM accounts
+WHERE (name NOT LIKE ‘C%’) AND (name LIKE ‘%s’);
 
-Ex) Use the accounts table, find all the companies whose names do not start with 'C' but end with 's'.
->SELECT name
->FROM accounts
->WHERE (name NOT LIKE ‘C%’) AND (name LIKE ‘%s’) ;
+SELECT *
+FROM web_events
+WHERE (channel IN ('organic', 'adwords')) AND (occurred_at BETWEEN '2016-01-01' AND '2017-01-01')
+ORDER BY occurred_at desc;
 
-Ex) Use the web_events table, to find all information regarding individuals who were contacted via organic or adwords and started their account at any point in 2016 sorted from newest to oldest.
->SELECT *
->FROM web_events
->WHERE (channel IN ('organic', 'adwords')) AND (occurred_at BETWEEN '2016-01-01' AND '2017-01-01')
->ORDER BY occurred_at desc ;
-
-Ex) Use the accounts table, find all the company names that start with a 'C' or 'W', and the primary contact contains 'ana' or 'Ana', but it doesn't contain 'eana'.
->SELECT *
->FROM accounts
->WHERE (name LIKE 'C%' OR name LIKE 'W%') 
+SELECT *
+FROM accounts
+WHERE (name LIKE 'C%' OR name LIKE 'W%') 
 AND (primary_poc LIKE '%ana%' OR primary_poc LIKE '%Ana%') 
-AND (primary_poc NOT LIKE '%eana%')  ;
+AND (primary_poc NOT LIKE '%eana%');
+```
 
 
 
