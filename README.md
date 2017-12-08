@@ -1,4 +1,4 @@
-# Study-SQL
+# Query-SQL
 <img src="https://user-images.githubusercontent.com/31917400/33782274-f5759f26-dc4f-11e7-95c5-9bbebc1fbaa7.png" width="600" height="300" />
 An entity relationship diagram (ERD) is a key element to understanding how we can pull data from multiple tables. In ERD, PK - a primary key - is a unique column in a particular table. FK – a foreign key – is the column that is (not unique and many of it exist in its table) the primary key (unique) of another table. FK can actually appear in many rows in a table.
 
@@ -170,7 +170,7 @@ ON accounts.id = orders.account_id
 WHERE orders.standard_qty > 100 AND orders.poster_qty > 50
 ORDER BY unit_price
 ```
- - Join-Q7. What are the different channels used by account id 1001? Your final table should have only 2 columns: **account name** and the **different channels**. You can try **SELECT DISTINCT** to narrow down the results to only the unique values.
+ - > Join-Q7. What are the different channels used by account id 1001? Your final table should have only 2 columns: **account name** and the **different channels**. You can try **SELECT DISTINCT** to narrow down the results to only the unique values.
 ``` 
 SELECT DISTINCT accounts.name account, web_events.channel
 FROM accounts
@@ -178,7 +178,7 @@ JOIN web_events
 ON accounts.id = web_events.account_id
 WHERE web_events.account_id = ‘1001’
 ``` 
- - Join-Q8. Find all the orders that occurred in 2015. Your final table should have 4 columns: **occurred_at**, **account name**, **order total**, and **order total_amt_usd**.
+ - > Join-Q8. Find all the orders that occurred in 2015. Your final table should have 4 columns: **occurred_at**, **account name**, **order total**, and **order total_amt_usd**.
 ``` 
 SELECT o.occurred_at, a.name, o.total, o.total_amt_usd
 FROM accounts a
@@ -187,6 +187,7 @@ ON a.id = o.account_id
 WHERE o.occurred_at BETWEEN ‘01-01-2015’ AND ‘12-31-2015’
 ORDER BY o.occurred_at DESC 
 ```
+
 
 
 
