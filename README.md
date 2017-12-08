@@ -148,14 +148,14 @@ ORDER BY accounts.name
 ```
  - > Join-Q5. Provide a table that provides the region for each sales_rep along with their associated accounts. This time only for accounts where the sales rep has a last name starting with ‘K’ and in the Midwest region. Your final table should include three columns: the **region name**, the **sales rep name**, and the **account name**. Sort the accounts alphabetically (A-Z) according to account name.
 ``` 
->SELECT region.name region, sales_reps.name rep, accounts.name account
->FROM region 
->JOIN sales_reps
->ON region.id = sales_reps.region_id
->JOIN accounts
->ON sales_reps.id = accounts.sales_rep_id 
->WHERE region.name = 'Midwest' AND sales_reps.name LIKE '% K%'
->ORDER BY accounts.name
+SELECT region.name region, sales_reps.name rep, accounts.name account
+FROM region 
+JOIN sales_reps
+ON region.id = sales_reps.region_id
+JOIN accounts
+ON sales_reps.id = accounts.sales_rep_id 
+WHERE region.name = 'Midwest' AND sales_reps.name LIKE '% K%'
+ORDER BY accounts.name
 ```
  - > Join-Q6. Provide the name for each region for every order, as well as the account name and the unit price they paid (total_amt_usd/total) for the order. However, you should only provide the results if the standard order quantity exceeds 100 and the poster order quantity exceeds 50. Your final table should have 3 columns: **region name**, **account name**, and **unit price**. Sort for the smallest unit price first. In order to avoid a division by zero error, adding .01 to the denominator here is helpful (total_amt_usd/(total+0.01).
 ``` 
@@ -187,8 +187,15 @@ ON a.id = o.account_id
 WHERE o.occurred_at BETWEEN ‘01-01-2015’ AND ‘12-31-2015’
 ORDER BY o.occurred_at DESC 
 ```
-
-
+---------------------------------------------------------------------------------------------------------------------------------------
+## 3. Aggregation
+_How to get some statistics in SQL?
+ - count() : How many rows in the column
+ - sum() : add all values together in the column
+ - min() : the lowest value in the column 
+ - max() : the highest value in the column
+ - avg() : the average in the column
+Aggregators operate down columns, not across rows.
 
 
 
