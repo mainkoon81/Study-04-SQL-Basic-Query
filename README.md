@@ -195,7 +195,400 @@ _How to get some statistics in SQL?
  - min() : the lowest value in the column 
  - max() : the highest value in the column
  - avg() : the average in the column
-Aggregators operate down columns, not across rows.
+#### Aggregators operate down columns, not across rows.
+```
+SELECT count(accounts.primary_poc)
+FROM accounts
+
+SELECT count(*)
+FROM accounts
+WHERE primary_poc IS NULL
+```
+#### count() does not consider rows that have NULL values; therefore, this can be useful for quickly identifying which rows have missing data. 
+
+
+
+
+
+
+
+
+Q. Find the total amount of poster_qty paper ordered in the orders table.
+>SELECT sum(poster_qty) AS total_poster_sales
+>FROM orders
+
+# aggregators only aggregate vertically - the values of a column. If you want to perform a calculation across rows, you would do this with simple arithmetic (+,-,*,/)
+
+Q. Find the total amount for each individual order that was spent on standard and gloss paper in the orders table. This should give a dollar amount for each order in the table.
+>SELECT standard_amt_usd + gloss_amt_usd AS total_standard_gloss
+>FROM orders
+# Notice, this solution did not use an aggregate. We used + instead. 
+
+Q. Though the price/standard_qty paper varies from one order to the next. I would like this ratio across all of the sales made in the orders table.
+>SELECT sum(standard_amt_usd) / sum(standard_qty) AS standard_price_per_unit
+>FROM orders
+# Notice, this solution used both an aggregate and our mathematical operators
+
+
+# Notice that MIN() and MAX() are aggregators that again ignore NULL values. MIN() will return the lowest number, earliest date, or non-numerical value as early in the alphabet as possible. As you might suspect, MAX() does the opposite. # avg() aggregate function ignores the NULL values in both the numerator and the denominator. If you want to count NULLs as zero, you will need to use SUM and COUNT.
+>SELECT min(standard_qty) AS standard_min, min(poster_qty) AS poster_min, min(gloss_qty) AS gloss_min, max(standard_qty) AS standard_max, max(poster_qty) AS poster_max, max(gloss_qty) AS gloss_max, avg(standard_qty) AS standard_avg, avg(poster_qty) AS poster_avg, avg(gloss_qty) AS gloss_avg
+>FROM orders
+
+Q. When was the earliest order ever placed?
+>SELECT min(occurred_at)
+>FROM orders
+
+Q. Try performing the same query as in question 1 without using an aggregation function.
+>SELECT occurred_at
+>FROM orders
+>ORDER BY occurred_at
+>LIMIT 1
+
+Q. What is the MEDIAN total_usd spent on all orders?
+>SELECT *
+>FROM (SELECT total_amt_usd
+      FROM orders
+      ORDER BY total_amt_usd
+      LIMIT 3457) AS Table1
+>ORDER BY total_amt_usd DESC
+>LIMIT 2;
+# Since there are 6912 orders - we want the average of the (half=3456) and (half+1=3457) order amounts when ordered. This gives us 2483.16 and 2482.55. This gives the median of 2482.855. SQL didn't even calculate the median for us. The above used a SUBQUERY.
+
+
+## GROUP BY clause : to aggregate data within subsets of the data. It creates segments that will aggregate independent from one another. It allows us to take sum of the data limited to some column rather than across the entire dataset.  
+>SELECT sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
+>FROM orders
+#Let’s say..here we want to create a separate set of sums for each ‘account_id’ so if we add ‘account_id’ then…
+>SELECT account_id, sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
+>FROM orders
+#it returns an error. WHY? Coz..we included the ‘account_id’ column! But this column is not being collapsed like the columns that are being aggregated. We have to be explicit about if we make it into a grouping. 
+>SELECT account_id, sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
+>FROM orders
+>GROUP BY account_id
+>ORDER BY account_id
+# GROUP BY is always go between WHERE and ORDER BY 
+Q. Which account (by name) placed the earliest order? Your solution should have the account name and the date of the order.
+SELECT accounts.name, orders.occurred_at 
+FROM accounts
+JOIN orders
+ON accounts.id = orders.account_id
+ORDER BY orders.occurred_at 
+LIMIT 2
+
+Q. Find the total sales in usd for each account. You should include two columns - the total sales for each company's orders in usd and the company name.
+SELECT accounts.name, sum(orders.total_amt_usd) 
+FROM accounts
+JOIN orders
+ON accounts.id = orders.account_id
+GROUP BY accounts.name
+
+Q. Via what channel did the most recent (latest) web_event occur, which account was associated with this web_event? Your query should return only three values - the date, channel, and account name.
+SELECT web_events.occurred_at date, web_events.channel channel, accounts.name account
+FROM web_events
+JOIN accounts
+ON web_events.account_id = accounts.id
+ORDER BY date DESC
+LIMIT 1
+ 
+Q. Find the total number of times each type of channel from the web_events was used. Your final table should have two columns - the channel and the number of times the channel was used.
+SELECT channel, count(channel)
+FROM web_events
+GROUP BY channel
+
+Q. Who was the primary contact associated with the earliest web_event? 
+SELECT a.primary_poc
+FROM web_events
+JOIN accounts
+ON web_events.account_id = accounts.id
+ORDER BY web_events.occurred_at
+
+Q. What was the smallest order placed by each account in terms of total usd. Provide only two columns - the account name and the total usd. Order from smallest dollar amounts to largest.
+SELECT accounts.name account, min(orders.total_amt_usd) total_usd
+FROM accounts
+JOIN orders
+ON accounts.id = orders.account_id
+GROUP BY accounts.name
+ORDER BY total_usd 
+
+Q. Find the number of sales reps in each region. Your final table should have two columns - the region and the number of sales_reps. Order from fewest reps to most reps.
+SELECT region.name, count(sales_reps.name) n_reps
+FROM region
+JOIN sales_reps
+ON sales_reps.region_id = region.id
+GROUP BY region.name
+ORDER  BY n_reps
+
+
+## You can GROUP BY multiple columns at once. This is often useful to aggregate across a number of different segments. The order of columns listed in the ORDER BY clause does make a difference. But the order of column names in your GROUP BY clause doesn’t matter. A reminder here that any column that is not within an aggregation must show up in your GROUP BY statement. If you forget, you will likely get an error.
+
+Q. For each account, determine the average amount of each type of paper they purchased across their orders. Your result should have four columns - one for the account name and one for the average quantity purchased for each of the paper types for each account. 
+SELECT accounts.name, avg(orders.standard_qty) avg_st, avg(orders.gloss_qty) avg_gl, avg(orders.poster_qty) avg_pos
+FROM accounts
+JOIN orders
+ON accounts.id = orders. account_id
+GROUP BY accounts.name
+
+Q. Determine the number of times a particular channel was used in the web_events table for each region. Your final table should have three columns - the region name, the channel, and the number of occurrences. Order your table with the highest number of occurrences first.
+SELECT region.name, web_events.channel, count(web_events.channel) count
+FROM region
+JOIN sales_reps
+ON region.id = sales_reps.region_id
+JOIN accounts
+ON sales_reps.id = accounts.sales_rep_id
+JOIN web_events
+ON accounts.id = web_events.account_id
+GROUP BY region.name, web_events.channel
+ORDER BY count DESC
+
+
+## SELECT DISTINCT clause: returning only the unique values of a particular column.
+Q. Use DISTINCT to test if there are any accounts associated with more than one region.
+#The below two queries have the same number of resulting rows (351), so we know that every account is associated with only one region. If each account was associated with more than one region, the second query should have returned more rows than the first query.#
+
+SELECT DISTINCT id, name
+FROM accounts
+
+SELECT accounts.id AS "account_id", accounts.name AS "account", region.id AS "region_id", region.name AS "region"
+FROM accounts
+JOIN sales_reps
+ON sales_reps.id = accounts.sales_rep_id
+JOIN region
+ON sales_reps.region_id = region.id
+
+Q. Have any sales reps worked on more than one account?
+SELECT DISTINCT id, name
+FROM sales_reps
+
+SELECT s.id, s.name, COUNT(*) num_accounts
+FROM accounts a
+JOIN sales_reps s
+ON s.id = a.sales_rep_id
+GROUP BY s.id, s.name
+ORDER BY num_accounts;
+
+
+## HAVING clause : to filter a query that has been aggregated….WHERE subsets the returned data based on the logical condition. HAVING is like WHERE, but HAVING works on logical statements involving aggregations. WHERE appears after FROM, JOIN, ON, but before GROUP BY. HAVING appears after GROUP BY, but before ORDER BY clause. # It is only useful when GROUP BY multiple columns. 
+# Essentially, any time you want to perform a WHERE on an element of your query that was created by an aggregate, you need to use HAVING instead of WHERE.  
+
+Q. How many of the sales reps have more than 5 accounts that they manage?
+SELECT sales_reps.id, count(*) num_account
+FROM accounts
+JOIN sales_reps
+ON sales_reps.id = accounts.sales_rep_id
+GROUP BY sales_reps.id
+HAVING count(*) > 5
+ORDER BY num_account
+
+# using SUBQUERY, we plug our query in FROM( ) clause. 
+SELECT COUNT(*) AS num_reps
+FROM(SELECT s.id, count(*) num_accounts
+     FROM accounts a
+     JOIN sales_reps s
+     ON s.id = a.sales_rep_id
+     GROUP BY s.id
+     HAVING COUNT(*) > 5
+     ORDER BY num_accounts) AS table_1
+
+
+
+
+
+Q. How many accounts have more than 20 orders?
+SELECT accounts.id, count(*) num_orders
+FROM orders
+JOIN accounts
+ON orders.account_id = accounts.id
+GROUP BY accounts.id
+HAVING count(*) > 20
+ORDER BY num_orders
+
+SELECT COUNT(*) AS num_account
+FROM(SELECT accounts.id, count(*) num_orders
+     FROM orders
+     JOIN accounts
+     ON orders.account_id = accounts.id
+     GROUP BY accounts.id
+     HAVING count(*) > 20
+     ORDER BY num_orders) AS table_1
+
+Q. Which account has the most orders?
+SELECT accounts.name, count(*) num_orders
+FROM orders
+JOIN accounts
+ON orders.account_id = accounts.id
+GROUP BY accounts.name
+ORDER BY num_orders DESC
+
+Q. How many accounts spent more than 30,000 usd total across all orders?
+SELECT accounts.id, sum(orders.total_amt_usd) total_spent
+FROM orders
+JOIN accounts
+ON orders.account_id = accounts.id
+GROUP BY accounts.id 
+HAVING sum(orders.total_amt_usd) > 30000
+ORDER BY total_spent
+
+Q. Which account has spent the most?
+SELECT accounts.id, sum(orders.total_amt_usd) total_spent
+FROM orders
+JOIN accounts
+ON orders.account_id = accounts.id
+GROUP BY accounts.id 
+ORDER BY total_spent DESC
+
+Q. Which accounts used facebook as a channel to contact customers more than 6 times? And which account used facebook most as a channel?
+
+SELECT accounts.name, count(*) num_six
+FROM web_events
+JOIN accounts
+ON web_events.account_id = accounts.id
+WHERE web_events.channel = ‘facebook’
+HAVING count(*) > 6
+GROUP BY accounts.name
+
+SELECT a.id, a.name, w.channel, COUNT(*) use_of_channel
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id
+GROUP BY a.id, a.name, w.channel
+HAVING COUNT(*) > 6 AND w.channel = 'facebook'
+ORDER BY use_of_channel;
+
+
+SELECT accounts.name, count(*) num_six
+FROM web_events
+JOIN accounts
+ON web_events.account_id = accounts.id
+WHERE web_events.channel = 'facebook'
+GROUP BY accounts.name
+ORDER BY num_six DESC
+
+SELECT a.id, a.name, w.channel, COUNT(*) use_of_channel
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id
+WHERE w.channel = 'facebook'
+GROUP BY a.id, a.name, w.channel
+ORDER BY use_of_channel DESC
+LIMIT 1;
+
+
+Q. Which channel was most frequently used by most accounts?
+SELECT web_events.channel, accounts.name, count(*) num_acc
+FROM accounts
+JOIN web_events
+ON web_events.account_id = accounts.id
+GROUP BY accounts.name, web_events.channel 
+ORDER BY num_acc DESC
+
+
+## DATE( ) function : GROUPing BY a date column is not usually very useful in SQL, as these columns tend to have transaction data down to a second. Keeping date information at such a granular data is both a blessing and a curse, as it gives really precise information (a blessing), but it makes grouping information together directly difficult (a curse). Here we see that dates are stored in year, month, day, hour, minute, second, which helps us in truncating. DATE_TRUNC( ) / DATE_PART( )
+*DATE_TRUNC : to truncate your date to a particular part of your date-time column. Common trunctions are : year - month - day
+*DATE_PART : to pull a specific portion of a date, but notice pulling ‘month’ or ‘dow’(dayofweek) means that you are no longer keeping the years in order. Rather you are grouping for certain components regardless of which year they belonged in.
+
+Q. Which year did Parch & Posey have the greatest sales in terms of total dollars? Are all years evenly represented by the dataset?
+SELECT DATE_PART('year', occurred_at) ord_year,  SUM(total_amt_usd) total_spent
+FROM orders
+GROUP BY 1
+ORDER BY 2 DESC
+# For 2013 and 2017 there is only one month of sales for each of these years (12 for 2013 and 1 for 2017). Therefore, neither of these are evenly represented. Sales have been increasing year over year, with 2016 being the largest sales to date. At this rate, we might expect 2017 to have the largest sales.
+
+Q. Which month did Parch & Posey have the greatest sales in terms of total dollars? Are all months evenly represented by the dataset? In order for this to be 'fair', we should remove the sales from 2013 and 2017.
+SELECT date_part(‘month’, occurred_at) ord_mon, sum(total_amt_usd) total_spent
+FROM orders
+WHERE occurred_at BETWEEN ‘2014-01-01’ AND ‘2016-12-31’
+GROUP BY ord_mon
+ORDER BY total_spent DESC
+
+Q. Which year did Parch & Posey have the greatest sales in terms of total number of orders? Are all years evenly represented by the dataset?
+SELECT date_part(‘year’, occurred_at) ord_year, count(*) total_ord
+FROM orders
+GROUP BY 1
+ORDER BY 2 DESC
+# Again, 2016 by far has the most amount of orders, but again 2013 and 2017 are not evenly represented to the other years in the dataset.
+
+Q. Which month did Parch & Posey have the greatest sales in terms of total number of orders? Are all months evenly represented by the dataset?
+SELECT date_part(‘month’, occurred_at) ord_mon, count(*) total_ord
+FROM orders
+WHERE occurred_at BETWEEN ‘2014-01-01’ AND ‘2016-12-31’
+GROUP BY 1
+ORDER BY 2 DESC
+# December still has the most sales, but interestingly, November has the second most sales (but not the most dollar sales. To make a fair comparison from one month to another 2017 and 2013 data were removed.
+
+Q. In which month of which year did Walmart spend the most on gloss paper in terms of dollars?
+SELECT date_trunc(‘month’, orders.occurred_at) ord_y_m, sum(orders.gloss_amt_usd) total_gloss
+FROM accounts
+JOIN orders
+ON accounts.id = orders.account_id
+WHERE accounts.name = ’Walmart’
+GROUP BY 1
+ORDER BY 2 DESC
+# Here, selected columns are all aggregations so WHERE clause can work. May 2016 was when Walmart spent the most on gloss paper.  
+## CASE statement : 
+*CASE must include the following components: WHEN, THEN, and END. 
+*ELSE is an optional component to catch cases that didn’t meet any of the other previous CASE conditions.
+*Just like WHERE, CASE makes any conditional statement using any conditional operator (common or logical) between WHEN and THEN. 
+*You can include multiple WHEN statements, as well as an ELSE statement again, to deal with any unaddressed conditions.
+
+>SELECT account_id, CASE WHEN standard_qty = 0 OR standard_qty IS NULL THEN 0 ELSE standard_amt_usd/standard_qty END AS unit_price
+>FROM orders
+# Now the first part of the statement will catch any of those division by zero values that were causing the error, and the other components will compute the division as necessary.
+
+*Getting the same information using a WHERE clause means only being able to get one set of data from the CASE at a time. As it were, using the WHERE clause only allows to count one condition at a time. 
+>SELECT CASE WHEN total > 500 THEN ‘Over 500’ ELSE ‘500 or under’ END AS total_grp, count(*) 
+>FROM orders
+>GROUP BY 1
+
+Q. We would like to understand 3 different branches of customers based on the amount associated with their purchases. The top branch includes anyone with a Lifetime Value (total sales of all orders) greater than 200,000 usd. The second branch is between 200,000 and 100,000 usd. The lowest branch is anyone under 100,000 usd. Provide a table that includes the level associated with each account. You should provide the account name, the total sales of all orders for the customer, and the level. Order with the top spending customers listed first.
+SELECT a.name, SUM(total_amt_usd) total_spent, 
+     CASE WHEN SUM(total_amt_usd) > 200000 THEN 'top'
+     WHEN  SUM(total_amt_usd) > 100000 THEN 'middle'
+     ELSE 'low' END AS customer_level
+FROM orders o
+JOIN accounts a
+ON o.account_id = a.id 
+GROUP BY a.name
+ORDER BY 2 DESC;
+
+Q. We would now like to perform a similar calculation to the first, but we want to obtain the total amount spent by customers only in 2016 and 2017. Keep the same levels as in the previous question. Order with the top spending customers listed first.
+SELECT a.name, SUM(total_amt_usd) total_spent, 
+     CASE WHEN SUM(total_amt_usd) > 200000 THEN 'top'
+     WHEN  SUM(total_amt_usd) > 100000 THEN 'middle'
+     ELSE 'low' END AS customer_level
+FROM orders o
+JOIN accounts a
+ON o.account_id = a.id
+WHERE occurred_at > '2015-12-31' 
+GROUP BY 1
+ORDER BY 2 DESC;
+
+Q. We would like to identify top performing sales reps, which are sales reps associated with more than 200 orders. Create a table with the sales rep name, the total number of orders, and a column with top or not depending on if they have more than 200 orders. Place the top sales people first in your final table.
+SELECT s.name, COUNT(*) num_ords,
+     CASE WHEN COUNT(*) > 200 THEN 'top'
+     ELSE 'not' END AS sales_rep_level
+FROM orders o
+JOIN accounts a
+ON o.account_id = a.id 
+JOIN sales_reps s
+ON s.id = a.sales_rep_id
+GROUP BY s.name
+ORDER BY 2 DESC;
+
+Q. The previous didn't account for the middle, nor the dollar amount associated with the sales. Management decides they want to see these characteristics represented as well. We would like to identify top performing sales reps, which are sales reps associated with more than 200 orders or more than 750000 in total sales. The middle group has any rep with more than 150 orders or 500000 in sales. Create a table with the sales rep name, the total number of orders, total sales across all orders, and a column with top, middle, or low depending on this criteria. Place the top sales people based on dollar amount of sales first in your final table. You might see a few upset sales people by this criteria!
+SELECT s.name, COUNT(*), SUM(o.total_amt_usd) total_spent, 
+     CASE WHEN COUNT(*) > 200 OR SUM(o.total_amt_usd) > 750000 THEN 'top'
+     WHEN COUNT(*) > 150 OR SUM(o.total_amt_usd) > 500000 THEN 'middle'
+     ELSE 'low' END AS sales_rep_level
+FROM orders o
+JOIN accounts a
+ON o.account_id = a.id 
+JOIN sales_reps s
+ON s.id = a.sales_rep_id
+GROUP BY s.name
+ORDER BY 3 DESC;
+
+
+
 
 
 
