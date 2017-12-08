@@ -1,5 +1,6 @@
 # Study-SQL
 <img src="https://user-images.githubusercontent.com/31917400/33782274-f5759f26-dc4f-11e7-95c5-9bbebc1fbaa7.png" width="600" height="300" />
+An entity relationship diagram (ERD) is a key element to understanding how we can pull data from multiple tables. In ERD, PK - a primary key - is a unique column in a particular table. FK – a foreign key – is the column that is (not unique and many of it exist in its table) the primary key (unique) of another table. FK can actually appear in many rows in a table.
 
 ---------------------------------------------------------------------------------------------------------------------------------------
 ## 1. Basic
@@ -42,10 +43,8 @@ LIMIT 5;
 SELECT name
 FROM accounts
 WHERE name LIKE 'C%';
-
-WHERE name LIKE '%s';
-
-WHERE name LIKE '%one%';
+> WHERE name LIKE '%s';
+> WHERE name LIKE '%one%';
 ```
 ### WHERE + column + IN + ( value, value, value,,,,) : 
  - check many column values for which we want to pull data, but all within the same single query. (tips: NEED to use " for when apostrophe within the text you are attempting to pull, for example Macy's in our work space would be: 'Macy"s')
@@ -95,28 +94,14 @@ FROM orders
 JOIN accounts
 ON orders.account_id = accounts.id;
 ```
-
-
-
-
-## An entity relationship diagram (ERD) is a key element to understanding how we can pull data from multiple tables. In ERD, PK - a primary key - is a unique column in a particular table. FK – a foreign key – is the column that is (not unique and many of it exist in its table) the primary key (unique) of another table. FK can actually appear in many rows in a table. 
-
->SELECT *
->FROM web_events
->JOIN accounts
->ON web_events.account_id = accounts.id
->JOIN orders
->ON accounts.id = orders.account_id
-
-
-Q. Provide a table for all web_events associated with account name of Walmart. There should be three columns. Be sure to include the primary_poc, time of the event, and the channel for each event. Additionally, you might choose to add a fourth column to assure only Walmart events were chosen.
-
->SELECT a.primary_poc, w.occurred_at, w.channel, a.name
->FROM web_events w
->JOIN accounts a
->ON w.account_id = a.id
->WHERE a.name = 'Walmart'; ============ WHERE a.name IN (‘Walmart’);
-
+ - > Q. Provide a table for all web_events associated with account name of Walmart. There should be three columns. Be sure to include the primary_poc, time of the event, and the channel for each event. Additionally, you might choose to add a fourth column to assure only Walmart events were chosen.
+```
+SELECT a.primary_poc, w.occurred_at, w.channel, a.name
+FROM web_events w
+JOIN accounts a
+ON w.account_id = a.id
+WHERE a.name = 'Walmart'; ============ WHERE a.name IN (‘Walmart’);
+```
 Q. Provide a table that provides the region for each sales_rep along with their associated accounts. Your final table should include three columns: the region name, the sales rep name, and the account name. Sort the accounts alphabetically (A-Z) according to account name.
 
 >SELECT r.name region, s.name rep, a.name account
