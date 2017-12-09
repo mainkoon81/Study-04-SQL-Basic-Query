@@ -316,8 +316,8 @@ ORDER BY num_accounts;
 ```
 _**HAVING** clause : to filter a query that has been aggregated….WHERE subsets the returned data based on the logical condition. HAVING is like WHERE, but HAVING works on logical statements involving aggregations. WHERE appears after FROM, JOIN, ON, but before GROUP BY. HAVING appears after GROUP BY, but before ORDER BY clause. **It is only useful when GROUP BY multiple columns.** 
 #### Essentially, any time you want to perform a WHERE on an element of your query that was created by an aggregate, you need to use HAVING instead of WHERE.  
-
-Q. How many of the sales reps have more than 5 accounts that they manage?
+ - > Agg-Q10. How many of the sales reps have more than 5 accounts that they manage?
+``` 
 SELECT sales_reps.id, count(*) num_account
 FROM accounts
 JOIN sales_reps
@@ -326,47 +326,19 @@ GROUP BY sales_reps.id
 HAVING count(*) > 5
 ORDER BY num_account
 
-# using SUBQUERY, we plug our query in FROM( ) clause. 
-SELECT COUNT(*) AS num_reps
-FROM(SELECT s.id, count(*) num_accounts
-     FROM accounts a
-     JOIN sales_reps s
-     ON s.id = a.sales_rep_id
-     GROUP BY s.id
-     HAVING COUNT(*) > 5
-     ORDER BY num_accounts) AS table_1
-
-
-
-
-
-Q. How many accounts have more than 20 orders?
-SELECT accounts.id, count(*) num_orders
-FROM orders
-JOIN accounts
-ON orders.account_id = accounts.id
-GROUP BY accounts.id
-HAVING count(*) > 20
-ORDER BY num_orders
-
-SELECT COUNT(*) AS num_account
-FROM(SELECT accounts.id, count(*) num_orders
-     FROM orders
-     JOIN accounts
-     ON orders.account_id = accounts.id
-     GROUP BY accounts.id
-     HAVING count(*) > 20
-     ORDER BY num_orders) AS table_1
-
-Q. Which account has the most orders?
-SELECT accounts.name, count(*) num_orders
-FROM orders
-JOIN accounts
-ON orders.account_id = accounts.id
-GROUP BY accounts.name
-ORDER BY num_orders DESC
-
-Q. How many accounts spent more than 30,000 usd total across all orders?
+#using SUBQUERY, we plug our query in FROM( ) clause. 
+>SELECT COUNT(*) AS num_reps
+>FROM
+(SELECT s.id, count(*) num_accounts
+FROM accounts a
+JOIN sales_reps s
+ON s.id = a.sales_rep_id
+GROUP BY s.id
+HAVING COUNT(*) > 5
+ORDER BY num_accounts) AS table_1
+```
+ - > Agg-Q11. How many accounts spent more than 30,000 usd total across all orders?
+```
 SELECT accounts.id, sum(orders.total_amt_usd) total_spent
 FROM orders
 JOIN accounts
@@ -374,25 +346,9 @@ ON orders.account_id = accounts.id
 GROUP BY accounts.id 
 HAVING sum(orders.total_amt_usd) > 30000
 ORDER BY total_spent
-
-Q. Which account has spent the most?
-SELECT accounts.id, sum(orders.total_amt_usd) total_spent
-FROM orders
-JOIN accounts
-ON orders.account_id = accounts.id
-GROUP BY accounts.id 
-ORDER BY total_spent DESC
-
-Q. Which accounts used facebook as a channel to contact customers more than 6 times? And which account used facebook most as a channel?
-
-SELECT accounts.name, count(*) num_six
-FROM web_events
-JOIN accounts
-ON web_events.account_id = accounts.id
-WHERE web_events.channel = ‘facebook’
-HAVING count(*) > 6
-GROUP BY accounts.name
-
+```
+ - > Agg-Q12. Which accounts used facebook as a channel to contact customers more than 6 times? And which account used facebook most as a channel?
+```
 SELECT a.id, a.name, w.channel, COUNT(*) use_of_channel
 FROM accounts a
 JOIN web_events w
@@ -400,45 +356,20 @@ ON a.id = w.account_id
 GROUP BY a.id, a.name, w.channel
 HAVING COUNT(*) > 6 AND w.channel = 'facebook'
 ORDER BY use_of_channel;
-
-
-SELECT accounts.name, count(*) num_six
-FROM web_events
-JOIN accounts
-ON web_events.account_id = accounts.id
-WHERE web_events.channel = 'facebook'
-GROUP BY accounts.name
-ORDER BY num_six DESC
-
-SELECT a.id, a.name, w.channel, COUNT(*) use_of_channel
-FROM accounts a
-JOIN web_events w
-ON a.id = w.account_id
-WHERE w.channel = 'facebook'
-GROUP BY a.id, a.name, w.channel
-ORDER BY use_of_channel DESC
-LIMIT 1;
-
-
-Q. Which channel was most frequently used by most accounts?
-SELECT web_events.channel, accounts.name, count(*) num_acc
-FROM accounts
-JOIN web_events
-ON web_events.account_id = accounts.id
-GROUP BY accounts.name, web_events.channel 
-ORDER BY num_acc DESC
-
-
-## DATE( ) function : GROUPing BY a date column is not usually very useful in SQL, as these columns tend to have transaction data down to a second. Keeping date information at such a granular data is both a blessing and a curse, as it gives really precise information (a blessing), but it makes grouping information together directly difficult (a curse). Here we see that dates are stored in year, month, day, hour, minute, second, which helps us in truncating. DATE_TRUNC( ) / DATE_PART( )
-*DATE_TRUNC : to truncate your date to a particular part of your date-time column. Common trunctions are : year - month - day
-*DATE_PART : to pull a specific portion of a date, but notice pulling ‘month’ or ‘dow’(dayofweek) means that you are no longer keeping the years in order. Rather you are grouping for certain components regardless of which year they belonged in.
-
-Q. Which year did Parch & Posey have the greatest sales in terms of total dollars? Are all years evenly represented by the dataset?
+```
+_DATE-function : GROUPing BY a date column is not usually very useful in SQL, as these columns tend to have transaction data down to a second. Keeping date information at such a granular data is both a blessing and a curse, as it gives really precise information (a blessing), but it makes grouping information together directly difficult (a curse). Here we see that dates are stored in year, month, day, hour, minute, second, which helps us in truncating. DATE_TRUNC( ) / DATE_PART( )
+ - **DATE_TRUNC( )**: to truncate your date to a particular part of your date-time column. Common trunctions are : year - month - day
+ - **DATE_PART( )**: to pull a specific portion of a date, but notice pulling ‘month’ or ‘dow’(dayofweek) means that you are no longer keeping the years in order. Rather you are grouping for certain components regardless of which year they belonged in.
+ - > Agg-Q13. Which year did Parch & Posey have the greatest sales in terms of total dollars? Are all years evenly represented by the dataset?
+``` 
 SELECT DATE_PART('year', occurred_at) ord_year,  SUM(total_amt_usd) total_spent
 FROM orders
 GROUP BY 1
 ORDER BY 2 DESC
-# For 2013 and 2017 there is only one month of sales for each of these years (12 for 2013 and 1 for 2017). Therefore, neither of these are evenly represented. Sales have been increasing year over year, with 2016 being the largest sales to date. At this rate, we might expect 2017 to have the largest sales.
+
+For 2013 and 2017 there is only one month of sales for each of these years (12 for 2013 and 1 for 2017). Therefore, neither of these are evenly represented. Sales have been increasing year over year, with 2016 being the largest sales to date. At this rate, we might expect 2017 to have the largest sales.
+```
+
 
 Q. Which month did Parch & Posey have the greatest sales in terms of total dollars? Are all months evenly represented by the dataset? In order for this to be 'fair', we should remove the sales from 2013 and 2017.
 SELECT date_part(‘month’, occurred_at) ord_mon, sum(total_amt_usd) total_spent
@@ -470,6 +401,26 @@ ON accounts.id = orders.account_id
 WHERE accounts.name = ’Walmart’
 GROUP BY 1
 ORDER BY 2 DESC
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Here, selected columns are all aggregations so WHERE clause can work. May 2016 was when Walmart spent the most on gloss paper.  
 ## CASE statement : 
 *CASE must include the following components: WHEN, THEN, and END. 
