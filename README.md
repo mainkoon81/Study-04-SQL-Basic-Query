@@ -357,7 +357,7 @@ GROUP BY a.id, a.name, w.channel
 HAVING COUNT(*) > 6 AND w.channel = 'facebook'
 ORDER BY use_of_channel;
 ```
-_DATE-function : GROUPing BY a date column is not usually very useful in SQL, as these columns tend to have transaction data down to a second. Keeping date information at such a granular data is both a blessing and a curse, as it gives really precise information (a blessing), but it makes grouping information together directly difficult (a curse). Here we see that dates are stored in year, month, day, hour, minute, second, which helps us in truncating. DATE_TRUNC( ) / DATE_PART( )
+_DATE-column: GROUPing BY a date column is not usually very useful in SQL, as these columns tend to have transaction data down to a second. Keeping date information at such a granular data is both a blessing and a curse, as it gives really precise information (a blessing), but it makes grouping information together directly difficult (a curse). Here we see that dates are stored in year, month, day, hour, minute, second, which helps us in truncating. DATE_TRUNC( ) / DATE_PART( )
  - **DATE_TRUNC( )**: to truncate your date to a particular part of your date-time column. Common trunctions are : year - month - day
  - **DATE_PART( )**: to pull a specific portion of a date, but notice pulling ‘month’ or ‘dow’(dayofweek) means that you are no longer keeping the years in order. Rather you are grouping for certain components regardless of which year they belonged in.
  - > Agg-Q13. Which year did Parch & Posey have the greatest sales in terms of total dollars? Are all years evenly represented by the dataset?
@@ -367,33 +367,37 @@ FROM orders
 GROUP BY 1
 ORDER BY 2 DESC
 
-For 2013 and 2017 there is only one month of sales for each of these years (12 for 2013 and 1 for 2017). Therefore, neither of these are evenly represented. Sales have been increasing year over year, with 2016 being the largest sales to date. At this rate, we might expect 2017 to have the largest sales.
+#For 2013 and 2017 there is only one month of sales for each of these years (12 for 2013 and 1 for 2017). Therefore, neither of these are evenly represented. Sales have been increasing year over year, with 2016 being the largest sales to date. At this rate, we might expect 2017 to have the largest sales.
 ```
-
-
-Q. Which month did Parch & Posey have the greatest sales in terms of total dollars? Are all months evenly represented by the dataset? In order for this to be 'fair', we should remove the sales from 2013 and 2017.
+ - > Agg-Q14. Which month did Parch & Posey have the greatest sales in terms of total dollars? Are all months evenly represented by the dataset? In order for this to be 'fair', we should remove the sales from 2013 and 2017.
+``` 
 SELECT date_part(‘month’, occurred_at) ord_mon, sum(total_amt_usd) total_spent
 FROM orders
 WHERE occurred_at BETWEEN ‘2014-01-01’ AND ‘2016-12-31’
 GROUP BY ord_mon
 ORDER BY total_spent DESC
-
-Q. Which year did Parch & Posey have the greatest sales in terms of total number of orders? Are all years evenly represented by the dataset?
+```
+ - > Agg-Q15. Which year did Parch & Posey have the greatest sales in terms of total number of orders? Are all years evenly represented by the dataset?
+``` 
 SELECT date_part(‘year’, occurred_at) ord_year, count(*) total_ord
 FROM orders
 GROUP BY 1
 ORDER BY 2 DESC
-# Again, 2016 by far has the most amount of orders, but again 2013 and 2017 are not evenly represented to the other years in the dataset.
 
-Q. Which month did Parch & Posey have the greatest sales in terms of total number of orders? Are all months evenly represented by the dataset?
+#Again, 2016 by far has the most amount of orders, but again 2013 and 2017 are not evenly represented to the other years in the dataset.
+```
+ - > Agg-Q16. Which month did Parch & Posey have the greatest sales in terms of total number of orders? Are all months evenly represented by the dataset?
+``` 
 SELECT date_part(‘month’, occurred_at) ord_mon, count(*) total_ord
 FROM orders
 WHERE occurred_at BETWEEN ‘2014-01-01’ AND ‘2016-12-31’
 GROUP BY 1
 ORDER BY 2 DESC
-# December still has the most sales, but interestingly, November has the second most sales (but not the most dollar sales. To make a fair comparison from one month to another 2017 and 2013 data were removed.
 
-Q. In which month of which year did Walmart spend the most on gloss paper in terms of dollars?
+# December still has the most sales, but interestingly, November has the second most sales (but not the most dollar sales. To make a fair comparison from one month to another 2017 and 2013 data were removed.
+```
+ - > Agg-Q17. In which month of which year did Walmart spend the most on gloss paper in terms of dollars?
+``` 
 SELECT date_trunc(‘month’, orders.occurred_at) ord_y_m, sum(orders.gloss_amt_usd) total_gloss
 FROM accounts
 JOIN orders
@@ -401,6 +405,7 @@ ON accounts.id = orders.account_id
 WHERE accounts.name = ’Walmart’
 GROUP BY 1
 ORDER BY 2 DESC
+```
 
 
 
