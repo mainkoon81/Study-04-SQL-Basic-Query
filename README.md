@@ -255,8 +255,16 @@ SELECT account_id, sum(standard_qty), sum(gloss_qty), sum(poster_qty)
 FROM orders
 GROUP BY account_id
 ORDER BY account_id
-# GROUP BY is always go between WHERE and ORDER BY 
+#GROUP BY is always go between WHERE and ORDER BY 
 ```
+
+
+
+
+
+
+
+
 
 Q. Which account (by name) placed the earliest order? Your solution should have the account name and the date of the order.
 SELECT accounts.name, orders.occurred_at 
