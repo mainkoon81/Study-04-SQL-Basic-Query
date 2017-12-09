@@ -195,7 +195,7 @@ _How to get some statistics in SQL?
  - min() : the lowest value in the column 
  - max() : the highest value in the column
  - avg() : the average in the column
-#### Aggregators operate down **columns**, not across rows.
+#### Aggregators operate down *columns, not across rows.
 ```
 SELECT count(accounts.primary_poc)
 FROM accounts
@@ -211,39 +211,37 @@ WHERE primary_poc IS NULL
 SELECT standard_amt_usd + gloss_amt_usd AS total_standard_gloss
 FROM orders
 ```
-#### Notice, this solution used both an aggregate and our mathematical operators
+#### Notice, this solution used both an aggregate and our mathematical operators.
  - > Agg-Q2. Though the price/standard_qty paper varies from one order to the next. I would like this ratio across all of the sales made in the orders table.
 ``` 
->SELECT sum(standard_amt_usd) / sum(standard_qty) AS standard_price_per_unit
->FROM orders
+SELECT sum(standard_amt_usd) / sum(standard_qty) AS standard_price_per_unit
+FROM orders
 ```
+#### Notice that MIN() and MAX() are aggregators that again ignore NULL values. MIN() will return the lowest number, earliest date, or non-numerical value as early in the alphabet as possible. As you might suspect, MAX() does the opposite. 
+#### AVG() aggregate function ignores the NULL values in both the numerator and the denominator. If you want to count NULLs as zero, you will need to use SUM() and COUNT().
+ - > Agg-Q3. When was the earliest order ever placed? Try performing the same query as in the previous without using an aggregation function.
+```
+SELECT min(occurred_at)
+FROM orders
 
-# Notice that MIN() and MAX() are aggregators that again ignore NULL values. MIN() will return the lowest number, earliest date, or non-numerical value as early in the alphabet as possible. As you might suspect, MAX() does the opposite. # avg() aggregate function ignores the NULL values in both the numerator and the denominator. If you want to count NULLs as zero, you will need to use SUM and COUNT.
->SELECT min(standard_qty) AS standard_min, min(poster_qty) AS poster_min, min(gloss_qty) AS gloss_min, max(standard_qty) AS standard_max, max(poster_qty) AS poster_max, max(gloss_qty) AS gloss_max, avg(standard_qty) AS standard_avg, avg(poster_qty) AS poster_avg, avg(gloss_qty) AS gloss_avg
->FROM orders
-
-Q. When was the earliest order ever placed?
->SELECT min(occurred_at)
->FROM orders
-
-Q. Try performing the same query as in question 1 without using an aggregation function.
 >SELECT occurred_at
 >FROM orders
 >ORDER BY occurred_at
 >LIMIT 1
-
-Q. What is the MEDIAN total_usd spent on all orders?
->SELECT *
->FROM (SELECT total_amt_usd
+```
+ - Agg-Q4. What is the MEDIAN total_usd spent on all orders?
+``` 
+SELECT *
+FROM (SELECT total_amt_usd
       FROM orders
       ORDER BY total_amt_usd
       LIMIT 3457) AS Table1
->ORDER BY total_amt_usd DESC
->LIMIT 2;
+ORDER BY total_amt_usd DESC
+LIMIT 2;
+
 # Since there are 6912 orders - we want the average of the (half=3456) and (half+1=3457) order amounts when ordered. This gives us 2483.16 and 2482.55. This gives the median of 2482.855. SQL didn't even calculate the median for us. The above used a SUBQUERY.
-
-
-## GROUP BY clause : to aggregate data within subsets of the data. It creates segments that will aggregate independent from one another. It allows us to take sum of the data limited to some column rather than across the entire dataset.  
+```
+#### GROUP BY clause : to aggregate data within subsets of the data. It creates segments that will aggregate independent from one another. It allows us to take sum of the data limited to some column rather than across the entire dataset.  
 >SELECT sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
 >FROM orders
 #Let’s say..here we want to create a separate set of sums for each ‘account_id’ so if we add ‘account_id’ then…
