@@ -241,7 +241,7 @@ LIMIT 2;
 
 # Since there are 6912 orders - we want the average of the (half=3456) and (half+1=3457) order amounts when ordered. This gives us 2483.16 and 2482.55. This gives the median of 2482.855. SQL didn't even calculate the median for us. The above used a SUBQUERY.
 ```
-_**GROUP BY** clause : to aggregate data within subsets of the data. It creates segments that will aggregate independent from one another. It allows us to take sum of the data limited to some column rather than across the entire dataset.
+_**GROUP BY** clause : to aggregate data **within subsets** of the data. It creates segments that will aggregate independent from one another. It allows us to take sum of the data **limited to some column** rather than across the entire dataset.
 ```
 SELECT sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
 FROM orders
@@ -257,77 +257,62 @@ GROUP BY account_id
 ORDER BY account_id
 #GROUP BY is always go between WHERE and ORDER BY 
 ```
-
-
-
-
-
-
-
-
-
-Q. Which account (by name) placed the earliest order? Your solution should have the account name and the date of the order.
-SELECT accounts.name, orders.occurred_at 
-FROM accounts
-JOIN orders
-ON accounts.id = orders.account_id
-ORDER BY orders.occurred_at 
-LIMIT 2
-
-Q. Find the total sales in usd for each account. You should include two columns - the total sales for each company's orders in usd and the company name.
+ - > Agg-Q5. Find the total sales in usd for each account. You should include two columns - the **total sales** for each company's orders in usd and the **company name**.
+``` 
 SELECT accounts.name, sum(orders.total_amt_usd) 
 FROM accounts
 JOIN orders
 ON accounts.id = orders.account_id
 GROUP BY accounts.name
-
-Q. Via what channel did the most recent (latest) web_event occur, which account was associated with this web_event? Your query should return only three values - the date, channel, and account name.
+```
+ - > Agg-Q6. Via what channel did the most recent (latest) web_event occur, which account was associated with this web_event? Your query should return only three values - the **date**, **channel**, and **account name**.
+``` 
 SELECT web_events.occurred_at date, web_events.channel channel, accounts.name account
 FROM web_events
 JOIN accounts
 ON web_events.account_id = accounts.id
 ORDER BY date DESC
 LIMIT 1
- 
-Q. Find the total number of times each type of channel from the web_events was used. Your final table should have two columns - the channel and the number of times the channel was used.
+```
+ - > Agg-Q7. Find the total number of times each type of channel from the web_events was used. Your final table should have two columns - the **channel** and the **number** of times the channel was used.
+``` 
 SELECT channel, count(channel)
 FROM web_events
 GROUP BY channel
-
-Q. Who was the primary contact associated with the earliest web_event? 
-SELECT a.primary_poc
-FROM web_events
-JOIN accounts
-ON web_events.account_id = accounts.id
-ORDER BY web_events.occurred_at
-
-Q. What was the smallest order placed by each account in terms of total usd. Provide only two columns - the account name and the total usd. Order from smallest dollar amounts to largest.
+```
+ - > Agg-Q8. What was the smallest order placed by each account in terms of total usd. Provide only two columns - the **account name** and the **total usd**. Order from smallest dollar amounts to largest.
+```
 SELECT accounts.name account, min(orders.total_amt_usd) total_usd
 FROM accounts
 JOIN orders
 ON accounts.id = orders.account_id
 GROUP BY accounts.name
 ORDER BY total_usd 
-
-Q. Find the number of sales reps in each region. Your final table should have two columns - the region and the number of sales_reps. Order from fewest reps to most reps.
+```
+ - > Agg-Q9. Find the number of sales reps in each region. Your final table should have two columns - the **region** and the **number of sales_reps**. Order from fewest reps to most reps.
+``` 
 SELECT region.name, count(sales_reps.name) n_reps
 FROM region
 JOIN sales_reps
 ON sales_reps.region_id = region.id
 GROUP BY region.name
 ORDER  BY n_reps
+```
 
 
-## You can GROUP BY multiple columns at once. This is often useful to aggregate across a number of different segments. The order of columns listed in the ORDER BY clause does make a difference. But the order of column names in your GROUP BY clause doesn’t matter. A reminder here that any column that is not within an aggregation must show up in your GROUP BY statement. If you forget, you will likely get an error.
 
-Q. For each account, determine the average amount of each type of paper they purchased across their orders. Your result should have four columns - one for the account name and one for the average quantity purchased for each of the paper types for each account. 
+
+#### You can GROUP BY multiple columns at once. This is often useful to aggregate across a number of different segments. The order of columns listed in the ORDER BY clause does make a difference. But the order of column names in your GROUP BY clause doesn’t matter. A reminder here that any column that is not within an aggregation must show up in your GROUP BY statement. If you forget, you will likely get an error.
+ - > Agg-Q10. For each account, determine the average amount of each type of paper they purchased across their orders. Your result should have four columns - one for the account name and one for the average quantity purchased for each of the paper types for each account.
+``` 
 SELECT accounts.name, avg(orders.standard_qty) avg_st, avg(orders.gloss_qty) avg_gl, avg(orders.poster_qty) avg_pos
 FROM accounts
 JOIN orders
 ON accounts.id = orders. account_id
 GROUP BY accounts.name
-
-Q. Determine the number of times a particular channel was used in the web_events table for each region. Your final table should have three columns - the region name, the channel, and the number of occurrences. Order your table with the highest number of occurrences first.
+```
+ - > Agg-Q11. Determine the number of times a particular channel was used in the web_events table for each region. Your final table should have three columns - the region name, the channel, and the number of occurrences. Order your table with the highest number of occurrences first.
+``` 
 SELECT region.name, web_events.channel, count(web_events.channel) count
 FROM region
 JOIN sales_reps
@@ -338,12 +323,10 @@ JOIN web_events
 ON accounts.id = web_events.account_id
 GROUP BY region.name, web_events.channel
 ORDER BY count DESC
-
-
-## SELECT DISTINCT clause: returning only the unique values of a particular column.
-Q. Use DISTINCT to test if there are any accounts associated with more than one region.
-#The below two queries have the same number of resulting rows (351), so we know that every account is associated with only one region. If each account was associated with more than one region, the second query should have returned more rows than the first query.#
-
+```
+#### SELECT DISTINCT clause: returning only the unique values of a particular column.
+ - > Agg-Q12. Use DISTINCT to test if there are any accounts associated with more than one region. The below two queries have the same number of resulting rows (351), so we know that every account is associated with only one region. If each account was associated with more than one region, the second query should have returned more rows than the first query.
+```
 SELECT DISTINCT id, name
 FROM accounts
 
@@ -353,6 +336,8 @@ JOIN sales_reps
 ON sales_reps.id = accounts.sales_rep_id
 JOIN region
 ON sales_reps.region_id = region.id
+```
+
 
 Q. Have any sales reps worked on more than one account?
 SELECT DISTINCT id, name
