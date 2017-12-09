@@ -474,15 +474,192 @@ SELECT channel, avg(num_event)
 FROM
 (SELECT date_trunc('day', occurred_at) date_day, channel, count(*) num_event
 FROM web_events
-GROUP BY 1, 2
-ORDER BY 1) sub_1
+GROUP BY 1, 2) sub_1
 GROUP BY 1
 ```
 #### Subquery in a conditional statement :  
- - If you are only returning a single value, you might use that value in a logical statement like WHERE, HAVING, or even SELECT - the value could be nested within a CASE statement. Note that you should not include an alias when you write a subquery in a conditional statement. This is because the subquery is treated as an individual value (or set of values in the IN case) rather than as a table. Also, notice the query here compared a single value. If we returned an entire column, IN would need to be used to perform a logical argument. If we are returning an entire table, then we must use an alias for the table, and perform additional logic on the entire table.
+ - Subquery also can be used in WHERE, JOIN clauses or WHEN portion in CASE statement. If you are only returning a single **value**(for example, **the day** of the first order ever occurred), you might use that value in a logical statement like WHERE, HAVING, or even SELECT - the value could be nested within a CASE statement. Note that you should not include an alias when you write a subquery in a conditional statement. This is because the subquery is treated as an individual value (or multiple values in the IN case) rather than as a table. Also, notice the query here compared a single value. If we returned an entire column, IN would need to be used to perform a logical argument. If we are returning an entire table, then we must use an alias for the table, and perform additional logic on the entire table.
+ - > Sub-Q1. What was the month/year combo for the first order placed? Use ‘date_trunc( )’ to pull level information about the first order placed in the ‘orders’ table. Then use the result to find the orders that took place in the same month and year as the first order, and then pull the average for each type of paper qty in this month. 
+```
+SELECT date_trunc(‘month’, occurred_at)
+FROM orders
+ORDER BY occurred_at 
+LIMIT 1  
+#..Which is…using 'min()' function, we can get the inner query.
+>SELECT date_trunc(‘month’, MIN(occurred_at))
+>FROM orders
 
+#then
+SELECT avg(standard_qty) avg_std, avg(gloss_qty) avg_gls, avg(poster_qty) avg_pos
+FROM orders
+WHERE date_trunc(‘month’, occurred_at) = 
+(SELECT date_trunc(‘month’, min(occurred_at))
+FROM orders)
+```
+ - > Sub-Q2. Provide the name of the sales_rep in each **region** with the largest amount of **total_amt_usd** sales.
+ 
+*First, find the total_amt_usd totals associated with each sales rep, and region in which they were located. 
+```
+SELECT s.name rep_name, r.name region_name, SUM(o.total_amt_usd) total_amt
+FROM sales_reps s
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+JOIN region r
+ON r.id = s.region_id
+GROUP BY 1,2
+ORDER BY 3 DESC;
+```
+*Next, pull the max for each region, and then we can use this to pull those rows in our final result.
+```
+SELECT region_name, MAX(total_amt) total_amt
+FROM
+(SELECT s.name rep_name, r.name region_name, SUM(o.total_amt_usd) total_amt
+FROM sales_reps s
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+JOIN region r
+ON r.id = s.region_id
+GROUP BY 1, 2) inner_sub
+GROUP BY 1;
+```
+*Lastly, JOIN of these two tables, where the region and amount match.
+```
+SELECT t1.rep_name, t1.region_name, t1.total_amt
+FROM
+(SELECT s.name rep_name, r.name region_name, SUM(o.total_amt_usd) total_amt
+FROM sales_reps s
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+JOIN region r
+ON r.id = s.region_id
+GROUP BY 1,2) t1
+JOIN 
+(SELECT region_name, MAX(total_amt) total_amt
+FROM(SELECT s.name rep_name, r.name region_name, SUM(o.total_amt_usd) total_amt
+ FROM sales_reps s
+ JOIN accounts a
+ ON a.sales_rep_id = s.id
+ JOIN orders o
+ ON o.account_id = a.id
+ JOIN region r
+ ON r.id = s.region_id
+ GROUP BY 1, 2) inner_sub
+GROUP BY 1) t2
+ON t1.region_name = t2.region_name AND t1.total_amt = t2.total_amt;
+```
+<img src="https://user-images.githubusercontent.com/31917400/33800565-3271f9ac-dd3a-11e7-85b0-45c0c3da2b50.jpg" width="400" height="150" />
 
+ - > Sub-Q3. For the region with the largest sales total_amt_usd, how many total orders were placed? 
+ 
+*First, pull the total_amt_usd for each region.
+```
+SELECT r.name region_name, SUM(o.total_amt_usd) total_amt
+FROM sales_reps s
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+JOIN region r
+ON r.id = s.region_id
+GROUP BY r.name;
+```
+*Then we want just want the region with the max amount from this table. There are two ways I considered getting this amount. One was to pull the max using a subquery. Another way is to order descending and just pull the top value.
+```
+SELECT MAX(total_amt)
+FROM 
+(SELECT r.name region_name, SUM(o.total_amt_usd) total_amt
+FROM sales_reps s
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+JOIN region r
+ON r.id = s.region_id
+GROUP BY r.name) sub;
+```
+*Finally, we want to pull the total orders for the region with this amount:
+```
+SELECT r.name, SUM(o.total) total_orders
+FROM sales_reps s
+JOIN accounts a
+ON a.sales_rep_id = s.id
+JOIN orders o
+ON o.account_id = a.id
+JOIN region r
+ON r.id = s.region_id
+GROUP BY r.name
+HAVING SUM(o.total_amt_usd) = 
+(SELECT MAX(total_amt)
+ FROM
+ (SELECT r.name region_name, SUM(o.total_amt_usd) total_amt
+  FROM sales_reps s
+  JOIN accounts a
+  ON a.sales_rep_id = s.id
+  JOIN orders o
+  ON o.account_id = a.id
+  JOIN region r
+  ON r.id = s.region_id
+  GROUP BY r.name) sub);
+```
+<img src="https://user-images.githubusercontent.com/31917400/33800636-b0097416-dd3b-11e7-8d5a-bc939293e30c.jpg" width="400" height="40" />
 
+ - > Sub-Q4. For the name of the account that purchased the most (in total of their lifetime as a customer) standard_qty paper, how many accounts still had more in total purchases?
+
+*First, we want to find the account that had the most standard_qty paper. The query here pulls that account, as well as the total amount:
+```
+SELECT a.name account_name, SUM(o.standard_qty) total_std, SUM(o.total) total
+FROM accounts a
+JOIN orders o
+ON o.account_id = a.id
+GROUP BY 1
+ORDER BY 2 DESC
+LIMIT 1;
+```
+*Now, I want to use this to pull all the accounts with more total sales:
+```
+SELECT a.name
+FROM orders o
+JOIN accounts a
+ON a.id = o.account_id
+GROUP BY 1
+HAVING SUM(o.total) 
+> (SELECT total
+FROM 
+(SELECT a.name act_name, SUM(o.standard_qty) tot_std, SUM(o.total) total
+  FROM accounts a
+  JOIN orders o
+  ON o.account_id = a.id
+  GROUP BY 1
+  ORDER BY 2 DESC
+  LIMIT 1) sub);
+```
+*This is now a list of all the accounts with more total orders. We can get the count with just another simple subquery.
+```
+SELECT COUNT(*)
+FROM 
+(SELECT a.name
+FROM orders o
+JOIN accounts a
+ON a.id = o.account_id
+GROUP BY 1
+HAVING SUM(o.total) 
+> (SELECT total 
+FROM 
+(SELECT a.name act_name, SUM(o.standard_qty) tot_std, SUM(o.total) total
+  FROM accounts a
+  JOIN orders o
+  ON o.account_id = a.id
+  GROUP BY 1
+  ORDER BY 2 DESC
+  LIMIT 1) inner_tab)) counter_tab;
+```
+<img src="https://user-images.githubusercontent.com/31917400/33800682-f5f766e4-dd3c-11e7-9f21-14c9d9877820.jpg" width="400" height="40" />
 
 
 
