@@ -400,15 +400,13 @@ ORDER BY 2 DESC
 SELECT account_id, CASE WHEN standard_qty = 0 OR standard_qty IS NULL THEN 0 ELSE standard_amt_usd/standard_qty END AS unit_price
 FROM orders
 ```
-#### Now the first part of the statement will catch any of those division by zero values that were causing the error, and the other components will compute the division as necessary.
-
-
-
-*Getting the same information using a WHERE clause means only being able to get one set of data from the CASE at a time. As it were, using the WHERE clause only allows to count one condition at a time. 
->SELECT CASE WHEN total > 500 THEN ‘Over 500’ ELSE ‘500 or under’ END AS total_grp, count(*) 
->FROM orders
->GROUP BY 1
-
+ - **Now the first part of the statement will catch any of those division by zero values that were causing the error, and the other components will compute the division as necessary.
+ - Getting the same information using a WHERE clause means only being able to get one set of data from the CASE at a time. As it were, using the WHERE clause only allows to count one condition at a time.**
+``` 
+SELECT CASE WHEN total > 500 THEN ‘Over 500’ ELSE ‘500 or under’ END AS total_grp, count(*) 
+FROM orders
+GROUP BY 1
+```
 Q. We would like to understand 3 different branches of customers based on the amount associated with their purchases. The top branch includes anyone with a Lifetime Value (total sales of all orders) greater than 200,000 usd. The second branch is between 200,000 and 100,000 usd. The lowest branch is anyone under 100,000 usd. Provide a table that includes the level associated with each account. You should provide the account name, the total sales of all orders for the customer, and the level. Order with the top spending customers listed first.
 SELECT a.name, SUM(total_amt_usd) total_spent, 
      CASE WHEN SUM(total_amt_usd) > 200000 THEN 'top'
