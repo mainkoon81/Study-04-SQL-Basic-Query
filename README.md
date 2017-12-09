@@ -419,7 +419,7 @@ ON o.account_id = a.id
 GROUP BY a.name
 ORDER BY 2 DESC;
 ```
- - Agg-Q17. We would now like to perform a similar calculation to the first, but we want to obtain the total amount spent by customers only in 2016 and 2017. Keep the same levels as in the previous question. Order with the top spending customers listed first.
+ - > Agg-Q17. We would now like to perform a similar calculation to the first, but we want to obtain the total amount spent by customers only in 2016 and 2017. Keep the same levels as in the previous question. Order with the top spending customers listed first.
 ``` 
 SELECT a.name, SUM(total_amt_usd) total_spent, 
      CASE WHEN SUM(total_amt_usd) > 200000 THEN 'top'
@@ -459,7 +459,27 @@ ON s.id = a.sales_rep_id
 GROUP BY s.name
 ORDER BY 3 DESC;
 ```
-
+---------------------------------------------------------------------------------------------------------------------------------------
+## 4. SubQueries
+_How to query from the results of another query?
+ - *Subqueries
+ - *Table Expressions
+ - *Persistent Derived Tables
+Both subqueries and table expressions are methods for being able to write a query that creates a table, and then write a query that interacts with this newly created table. This is because sometimes the question you are trying to answer doesn't have an answer when working directly with existing tables in database. For example, Q.Find the average number of events for each day for each channel ? 
+ - #The quiry A: it provides us the number of events for each day and each channel. 
+ - #The quiry B: it averages these values together.
+ - #The first query goes in the FROM clause. Must use an alias for the table you nest within the outer query. 
+```
+SELECT channel, avg(num_event)
+FROM
+(SELECT date_trunc('day', occurred_at) date_day, channel, count(*) num_event
+FROM web_events
+GROUP BY 1, 2
+ORDER BY 1) sub_1
+GROUP BY 1
+```
+#### Subquery in a conditional statement :  
+ - If you are only returning a single value, you might use that value in a logical statement like WHERE, HAVING, or even SELECT - the value could be nested within a CASE statement. Note that you should not include an alias when you write a subquery in a conditional statement. This is because the subquery is treated as an individual value (or set of values in the IN case) rather than as a table. Also, notice the query here compared a single value. If we returned an entire column, IN would need to be used to perform a logical argument. If we are returning an entire table, then we must use an alias for the table, and perform additional logic on the entire table.
 
 
 
