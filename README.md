@@ -229,7 +229,7 @@ FROM orders
 >ORDER BY occurred_at
 >LIMIT 1
 ```
- - Agg-Q4. What is the MEDIAN total_usd spent on all orders?
+ - > Agg-Q4. What is the MEDIAN total_usd spent on all orders?
 ``` 
 SELECT *
 FROM (SELECT total_amt_usd
@@ -241,18 +241,23 @@ LIMIT 2;
 
 # Since there are 6912 orders - we want the average of the (half=3456) and (half+1=3457) order amounts when ordered. This gives us 2483.16 and 2482.55. This gives the median of 2482.855. SQL didn't even calculate the median for us. The above used a SUBQUERY.
 ```
-#### GROUP BY clause : to aggregate data within subsets of the data. It creates segments that will aggregate independent from one another. It allows us to take sum of the data limited to some column rather than across the entire dataset.  
->SELECT sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
->FROM orders
+_**GROUP BY** clause : to aggregate data within subsets of the data. It creates segments that will aggregate independent from one another. It allows us to take sum of the data limited to some column rather than across the entire dataset.
+```
+SELECT sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
+FROM orders
 #Let’s say..here we want to create a separate set of sums for each ‘account_id’ so if we add ‘account_id’ then…
->SELECT account_id, sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
->FROM orders
+
+SELECT account_id, sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
+FROM orders
 #it returns an error. WHY? Coz..we included the ‘account_id’ column! But this column is not being collapsed like the columns that are being aggregated. We have to be explicit about if we make it into a grouping. 
->SELECT account_id, sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
->FROM orders
->GROUP BY account_id
->ORDER BY account_id
+
+SELECT account_id, sum(standard_qty), sum(gloss_qty), sum(poster_qty) 
+FROM orders
+GROUP BY account_id
+ORDER BY account_id
 # GROUP BY is always go between WHERE and ORDER BY 
+```
+
 Q. Which account (by name) placed the earliest order? Your solution should have the account name and the date of the order.
 SELECT accounts.name, orders.occurred_at 
 FROM accounts
