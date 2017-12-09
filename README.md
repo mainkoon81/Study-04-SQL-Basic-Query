@@ -466,9 +466,9 @@ _How to query from the results of another query?
  - *Table Expressions
  - *Persistent Derived Tables
 Both subqueries and table expressions are methods for being able to write a query that creates a table, and then write a query that interacts with this newly created table. This is because sometimes the question you are trying to answer doesn't have an answer when working directly with existing tables in database. For example, Q.Find the average number of events for each day for each channel ? 
- - #The quiry A: it provides us the number of events for each day and each channel. 
- - #The quiry B: it averages these values together.
- - #The first query goes in the FROM clause. Must use an alias for the table you nest within the outer query. 
+   - #The quiry A: it provides us the number of events for each day and each channel. 
+   - #The quiry B: it averages these values together.
+   - #The first query goes in the FROM clause. Must use an alias for the table you nest within the outer query. 
 ```
 SELECT channel, avg(num_event)
 FROM
