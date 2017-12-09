@@ -195,7 +195,7 @@ _How to get some statistics in SQL?
  - min() : the lowest value in the column 
  - max() : the highest value in the column
  - avg() : the average in the column
-#### Aggregators operate down columns, not across rows.
+#### Aggregators operate down **columns**, not across rows.
 ```
 SELECT count(accounts.primary_poc)
 FROM accounts
@@ -205,30 +205,18 @@ FROM accounts
 WHERE primary_poc IS NULL
 ```
 #### count() does not consider rows that have NULL values; therefore, this can be useful for quickly identifying which rows have missing data. 
-
-
-
-
-
-
-
-
-Q. Find the total amount of poster_qty paper ordered in the orders table.
->SELECT sum(poster_qty) AS total_poster_sales
->FROM orders
-
-# aggregators only aggregate vertically - the values of a column. If you want to perform a calculation across rows, you would do this with simple arithmetic (+,-,*,/)
-
-Q. Find the total amount for each individual order that was spent on standard and gloss paper in the orders table. This should give a dollar amount for each order in the table.
->SELECT standard_amt_usd + gloss_amt_usd AS total_standard_gloss
->FROM orders
-# Notice, this solution did not use an aggregate. We used + instead. 
-
-Q. Though the price/standard_qty paper varies from one order to the next. I would like this ratio across all of the sales made in the orders table.
+#### aggregators only aggregate vertically - the values of a column. If you want to perform a calculation across rows, you would do this with simple arithmetic (+,-,*,/). Notice, this solution did not use an aggregate. We used '+' instead. 
+ - > Agg-Q1. Find the total amount for each individual order that was spent on standard and gloss paper in the orders table. This should give a dollar amount for each order in the table.
+```
+SELECT standard_amt_usd + gloss_amt_usd AS total_standard_gloss
+FROM orders
+```
+#### Notice, this solution used both an aggregate and our mathematical operators
+ - > Agg-Q2. Though the price/standard_qty paper varies from one order to the next. I would like this ratio across all of the sales made in the orders table.
+``` 
 >SELECT sum(standard_amt_usd) / sum(standard_qty) AS standard_price_per_unit
 >FROM orders
-# Notice, this solution used both an aggregate and our mathematical operators
-
+```
 
 # Notice that MIN() and MAX() are aggregators that again ignore NULL values. MIN() will return the lowest number, earliest date, or non-numerical value as early in the alphabet as possible. As you might suspect, MAX() does the opposite. # avg() aggregate function ignores the NULL values in both the numerator and the denominator. If you want to count NULLs as zero, you will need to use SUM and COUNT.
 >SELECT min(standard_qty) AS standard_min, min(poster_qty) AS poster_min, min(gloss_qty) AS gloss_min, max(standard_qty) AS standard_max, max(poster_qty) AS poster_max, max(gloss_qty) AS gloss_max, avg(standard_qty) AS standard_avg, avg(poster_qty) AS poster_avg, avg(gloss_qty) AS gloss_avg
