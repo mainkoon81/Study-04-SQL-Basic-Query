@@ -723,6 +723,9 @@ FROM (SELECT o.account_id, AVG(o.total_amt_usd) avg_amt
 ```
 <img src="https://user-images.githubusercontent.com/31917400/33800735-6d043f72-dd3e-11e7-8058-0c3bfaaebabe.jpg" width="400" height="40" />
 
+### WITH statement : 
+ - *is often called a **Common Table Expression** or **CTE**. Though these expressions serve the exact same purpose as subqueries, they are more common in practice, as they tend to be cleaner for a future reader to follow the logic.
+
 
 
 
