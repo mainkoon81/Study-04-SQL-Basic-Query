@@ -79,7 +79,9 @@ AND (primary_poc NOT LIKE '%eana%');
 ```
 ---------------------------------------------------------------------------------------------------------------------------------------
 ## 2. Join (inner)
-<img src="https://user-images.githubusercontent.com/31917400/33805787-25cf61ae-ddb6-11e7-9a22-982109fd7ba8.png" width="200" height="100" />
+<img src="https://user-images.githubusercontent.com/31917400/33805787-25cf61ae-ddb6-11e7-9a22-982109fd7ba8.png" width="150" height="100" />
+
+> Producing results for which the join condition is matched in both tables.
 
 _Why Would We Want to Split Data Into Separate Tables in the database? 
  - 1)Some columns (they are identifiers though) carry different types of objects. Keeping separate makes things easier to organize. 
@@ -189,7 +191,42 @@ ON a.id = o.account_id
 WHERE o.occurred_at BETWEEN ‘01-01-2015’ AND ‘12-31-2015’
 ORDER BY o.occurred_at DESC 
 ```
-#### 
+### Left joins, Right joins 
+<img src="https://user-images.githubusercontent.com/31917400/33805855-0ec5196c-ddb7-11e7-9172-f68766d7c62c.png" width="150" height="100" />
+<img src="https://user-images.githubusercontent.com/31917400/33805856-10c3126e-ddb7-11e7-98a2-75621ef160d4.png" width="150" height="100" />
+
+> Left joins include unmatched rows from the left table, which is indicated in the “FROM” clause.
+```
+SELECT column_name(s)
+FROM Table_A
+LEFT JOIN Table_B 
+ON Table_A.column_name = Table_B.column_name;
+```
+> Right joins are similar to left joins, but include unmatched data from the right table..the one that’s indicated in the JOIN clause.
+```
+SELECT column_name(s)
+FROM Table_A
+RIGHT JOIN Table_B 
+ON Table_A.column_name = Table_B.column_name;
+```
+### Full Outter joins, 
+<img src="https://user-images.githubusercontent.com/31917400/33805860-15828ce4-ddb7-11e7-90ab-c41f647bd20b.png" width="150" height="100" />
+<img src="https://user-images.githubusercontent.com/31917400/33805863-185f62fc-ddb7-11e7-98c1-3bc076cd564c.png" width="150" height="100" />
+
+> In some cases, you might want to include unmatched rows from both tables being joined. You can do this with a full outer join.
+ - A common application of this is when joining two tables on a timestamp. Let’s say you’ve got one table containing the number of item 1 sold each day, and another containing the number of item 2 sold. If a certain date (say, January 1, 2018) exists in the left table but not the right, while another date (say, January 2, 2018) exists in the right table but not the left:
+   - a left join would drop the row with January 2, 2018 from the result set
+   - a right join would drop January 1, 2018 from the result set
+The only way to make sure both January 1, 2018 and January 2, 2018 make it into the results is to do a full outer join. A full outer join returns unmatched records in each table with null values for the columns that came from the opposite table.
+```
+SELECT column_name(s)
+FROM Table_A
+FULL OUTER JOIN Table_B ON Table_A.column_name = Table_B.column_name;
+```
+> If you wanted to return unmatched rows only, which is useful for some cases of data assessment, you can isolate them by adding the following line to the end of the query:
+```
+WHERE Table_A.column_name IS NULL OR Table_B.column_name IS NULL
+```
 
 
 ---------------------------------------------------------------------------------------------------------------------------------------
