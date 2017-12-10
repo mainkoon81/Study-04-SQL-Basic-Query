@@ -78,7 +78,9 @@ AND (primary_poc LIKE '%ana%' OR primary_poc LIKE '%Ana%')
 AND (primary_poc NOT LIKE '%eana%');
 ```
 ---------------------------------------------------------------------------------------------------------------------------------------
-## 2. Join
+## 2. Join (inner)
+<img src="https://user-images.githubusercontent.com/31917400/33805787-25cf61ae-ddb6-11e7-9a22-982109fd7ba8.png" width="200" height="100" />
+
 _Why Would We Want to Split Data Into Separate Tables in the database? 
  - 1)Some columns (they are identifiers though) carry different types of objects. Keeping separate makes things easier to organize. 
  - 2)Allowing queries faster to execute by reducing the amount of data. 
@@ -187,6 +189,9 @@ ON a.id = o.account_id
 WHERE o.occurred_at BETWEEN ‘01-01-2015’ AND ‘12-31-2015’
 ORDER BY o.occurred_at DESC 
 ```
+#### 
+
+
 ---------------------------------------------------------------------------------------------------------------------------------------
 ## 3. Aggregation
 _How to get some statistics in SQL?
