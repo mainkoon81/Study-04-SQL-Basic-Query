@@ -465,17 +465,33 @@ _How to query from the results of another query?
  - *Subqueries
  - *Table Expressions
  - *Persistent Derived Tables
-Both subqueries and table expressions are methods for being able to write a query that creates a table, and then write a query that interacts with this newly created table. This is because sometimes the question you are trying to answer doesn't have an answer when working directly with existing tables in database. For example, Q.Find the average number of events for each day for each channel ? 
+_Both subqueries and table expressions are methods for being able to write a query that creates a table, and then write a query that interacts with this newly created table. This is because sometimes the question you are trying to answer doesn't have an answer when working directly with existing tables in database. For example, Q.Find the average number of events for each day for each channel ? 
    - #The quiry A: it provides us the number of events for each day and each channel. 
    - #The quiry B: it averages these values together.
    - #The first query goes in the FROM clause. Must use an alias for the table you nest within the outer query. 
 ```
-SELECT channel, avg(num_event)
-FROM
-(SELECT date_trunc('day', occurred_at) date_day, channel, count(*) num_event
-FROM web_events
-GROUP BY 1, 2) sub_1
-GROUP BY 1
+SELECT channel, AVG(events) AS average_events
+FROM (SELECT DATE_TRUNC('day',occurred_at) AS day, channel, COUNT(*) as events
+      FROM web_events 
+      GROUP BY 1,2) sub
+GROUP BY channel
+ORDER BY 2 DESC;
+```   
+### WITH statement : 
+ - *is often called a **Common Table Expression** or **CTE**. Though these expressions serve the exact same purpose as subqueries, they are more common in practice, as they tend to be cleaner for a future reader to follow the logic. We can run it as a completely separate query and then right back into the database as its own table. 
+
+Let's try this again using a WITH statement.
+ - This is the part we put in the WITH statement. Notice, we are aliasing the table as events below. Now, we can use this newly created events table as if it is any other table in our database:
+```
+WITH table_1 AS (
+          SELECT DATE_TRUNC('day',occurred_at) AS day, channel, COUNT(*) as events
+          FROM web_events 
+          GROUP BY 1,2)
+
+SELECT channel, AVG(events) AS average_events
+FROM table_1
+GROUP BY channel
+ORDER BY 2 DESC;
 ```
 #### Subquery in a conditional statement :  
  - Subquery also can be used in WHERE, JOIN clauses or WHEN portion in CASE statement. If you are only returning a single **value**(for example, **the day** of the first order ever occurred), you might use that value in a logical statement like WHERE, HAVING, or even SELECT - the value could be nested within a CASE statement. Note that you should not include an alias when you write a subquery in a conditional statement. This is because the subquery is treated as an individual value (or multiple values in the IN case) rather than as a table. Also, notice the query here compared a single value. If we returned an entire column, IN would need to be used to perform a logical argument. If we are returning an entire table, then we must use an alias for the table, and perform additional logic on the entire table.
@@ -496,6 +512,8 @@ WHERE date_trunc(‘month’, occurred_at) =
 (SELECT date_trunc(‘month’, min(occurred_at))
 FROM orders)
 ```
+<img src="https://user-images.githubusercontent.com/31917400/33800965-64ca56d8-dd44-11e7-83f4-06a1fbaf3ed4.jpg" width="400" height="150" />
+
  - > Sub-Q2. Provide the name of the sales_rep in each **region** with the largest amount of **total_amt_usd** sales.
  
 *First, find the total_amt_usd totals associated with each sales rep, and region in which they were located. 
@@ -723,8 +741,6 @@ FROM (SELECT o.account_id, AVG(o.total_amt_usd) avg_amt
 ```
 <img src="https://user-images.githubusercontent.com/31917400/33800735-6d043f72-dd3e-11e7-8058-0c3bfaaebabe.jpg" width="400" height="40" />
 
-### WITH statement : 
- - *is often called a **Common Table Expression** or **CTE**. Though these expressions serve the exact same purpose as subqueries, they are more common in practice, as they tend to be cleaner for a future reader to follow the logic.
 
 
 
