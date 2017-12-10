@@ -512,7 +512,7 @@ WHERE date_trunc(‘month’, occurred_at) =
 (SELECT date_trunc(‘month’, min(occurred_at))
 FROM orders)
 ```
-<img src="https://user-images.githubusercontent.com/31917400/33800965-64ca56d8-dd44-11e7-83f4-06a1fbaf3ed4.jpg" width="400" height="150" />
+<img src="https://user-images.githubusercontent.com/31917400/33800965-64ca56d8-dd44-11e7-83f4-06a1fbaf3ed4.jpg" width="400" height="40" />
 
  - > Sub-Q2. Provide the name of the sales_rep in each **region** with the largest amount of **total_amt_usd** sales.
  
