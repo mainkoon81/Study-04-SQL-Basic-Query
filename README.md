@@ -661,6 +661,67 @@ FROM
 ```
 <img src="https://user-images.githubusercontent.com/31917400/33800682-f5f766e4-dd3c-11e7-9f21-14c9d9877820.jpg" width="400" height="40" />
 
+ - > Sub-Q5. For the customer that spent the most (in total of their lifetime as a customer) total_amt_usd, how many web_events did they have for each channel?
+ 
+*we first want to pull the customer with the most spent in lifetime value.
+```
+SELECT a.id, a.name, SUM(o.total_amt_usd) tot_spent
+FROM orders o
+JOIN accounts a
+ON a.id = o.account_id
+GROUP BY a.id, a.name
+ORDER BY 3 DESC
+LIMIT 1;
+```
+*Now, we want to look at the number of events on each channel this company had, which we can match with just the id.
+```
+SELECT a.name, w.channel, COUNT(*)
+FROM accounts a
+JOIN web_events w
+ON a.id = w.account_id AND a.id =  (SELECT id
+                     FROM (SELECT a.id, a.name, SUM(o.total_amt_usd) tot_spent
+                           FROM orders o
+                           JOIN accounts a
+                           ON a.id = o.account_id
+                           GROUP BY a.id, a.name
+                           ORDER BY 3 DESC
+                           LIMIT 1) inner_table)
+GROUP BY 1, 2
+ORDER BY 3 DESC;
+```
+<img src="https://user-images.githubusercontent.com/31917400/33800702-a134772c-dd3d-11e7-9ec3-b49360ae712a.jpg" width="400" height="150" />
+
+ - > Sub-Q6. What is the lifetime average amount spent in terms of total_amt_usd for only the companies that spent more than the average of all orders.
+ 
+*First, we want to pull the average of all accounts in terms of total_amt_usd:
+```
+SELECT AVG(o.total_amt_usd) avg_all
+FROM orders o
+JOIN accounts a
+ON a.id = o.account_id;
+```
+*Then, we want to only pull the accounts with more than this average amount.
+```
+SELECT o.account_id, AVG(o.total_amt_usd)
+FROM orders o
+GROUP BY 1
+HAVING AVG(o.total_amt_usd) > (SELECT AVG(o.total_amt_usd) avg_all
+                               FROM orders o
+                               JOIN accounts a
+                               ON a.id = o.account_id);
+```
+*Finally, we just want the average of these values.
+```
+SELECT AVG(avg_amt)
+FROM (SELECT o.account_id, AVG(o.total_amt_usd) avg_amt
+    FROM orders o
+    GROUP BY 1
+    HAVING AVG(o.total_amt_usd) > (SELECT AVG(o.total_amt_usd) avg_all
+                               FROM orders o
+                               JOIN accounts a
+                               ON a.id = o.account_id)) temp_table;
+```
+<img src="https://user-images.githubusercontent.com/31917400/33800735-6d043f72-dd3e-11e7-8058-0c3bfaaebabe.jpg" width="400" height="40" />
 
 
 
