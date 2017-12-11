@@ -356,8 +356,7 @@ ON s.id = a.sales_rep_id
 GROUP BY s.id, s.name
 ORDER BY num_accounts;
 ```
-_**HAVING** clause : to filter a query that has been aggregated….WHERE subsets the returned data based on the logical condition. HAVING is like WHERE, but HAVING works on logical statements involving aggregations. WHERE appears after FROM, JOIN, ON, but before GROUP BY. HAVING appears after GROUP BY, but before ORDER BY clause. **It is only useful when GROUP BY multiple columns.** 
-#### Essentially, any time you want to perform a WHERE on an element of your query that was created by an aggregate, you need to use HAVING instead of WHERE.  
+_**HAVING** clause : to filter a query that has been aggregated….WHERE subsets the returned data based on the logical condition. HAVING is like WHERE, but HAVING works on **logical statements** involving **aggregations**. WHERE appears after FROM, JOIN, ON, but before GROUP BY. HAVING appears after **GROUP BY**, but before ORDER BY clause. (It is only useful when GROUP BY multiple columns?) Essentially, any time you want to perform a WHERE on an element of your query that was created by an aggregate, you need to use HAVING instead of WHERE.  
  - > Agg-Q10. How many of the sales reps have more than 5 accounts that they manage?
 ``` 
 SELECT sales_reps.id, count(*) num_account
