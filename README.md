@@ -3,7 +3,7 @@
 An entity relationship diagram (ERD) is a key element to understanding how we can pull data from multiple tables. In ERD, PK - a primary key - is a unique column in a particular table. FK – a foreign key – is the column that is (not unique and many of it exist in its table) the primary key (unique) of another table. FK can actually appear in many rows in a table.
 
 ---------------------------------------------------------------------------------------------------------------------------------------
-## 1. Basic
+## 1. Basic Query
 ### SELECT + columns  : 
  - is where you tell the query what columns you want back.
  - the arithmetic operators:  +, -, *, / (f or creating the “derived columns”, a combination of existing columns, then….. AS new_name)… what if…we are thrown an error because of a division by zero? We will go through CASE statements..
